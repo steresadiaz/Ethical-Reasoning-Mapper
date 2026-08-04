@@ -1,0 +1,28 @@
+id,dimension,variable,operational_definition
+ERC01,ERC,Ethical Position,An explicit normative stance regarding the ethical dilemma.
+ERC02,ERC,Factual Premise,An empirical proposition used to support ethical reasoning.
+ERC03,ERC,Normative Premise,"An explicit moral principle, value, duty, or norm supporting the reasoning."
+ERC04,ERC,Conclusion,An explicit ethical conclusion derived from the reasoning.
+ERC05,ERC,Counterargument,Recognition of an alternative position or objection.
+ERC06,ERC,Moral Conflict,Explicit recognition of competing moral considerations.
+ERC07,ERC,Deliberative Weighing,Explicit comparison or balancing of competing considerations before reaching a conclusion.
+ERC08,ERC,Resolution,Proposal of a justified course of action.
+MSC01,MSC,Welfare / Well-being,"Explicit consideration of physical or psychological well-being, suffering, harm, or benefit."
+MSC02,MSC,Rights,"Explicit recognition of rights, entitlements, or moral claims."
+MSC03,MSC,Justice / Fairness,"Explicit concern for fairness, equality, equity, or distributive justice."
+MSC04,MSC,Autonomy,"Explicit recognition of agency, freedom, self-determination, or informed choice."
+MSC05,MSC,Responsibility / Duty,"Explicit appeal to obligations, duties, accountability, or professional responsibilities."
+MSC06,MSC,Vulnerability,"Explicit recognition of fragility, dependency, marginalization, or the need for protection."
+MSC07,MSC,Relationships / Care,"Explicit emphasis on interpersonal relationships, empathy, care, trust, or relational responsibilities."
+MSC08,MSC,Intrinsic Value,"Explicit recognition that an individual, organism, or entity possesses value independent of its utility."
+MSC09,MSC,Capabilities / Flourishing,"Explicit concern for the ability to develop, function, or flourish."
+MSC10,MSC,Social or Cultural Context,"Explicit recognition that social, cultural, historical, political, or institutional conditions are morally relevant."
+SJ01,SJ,Empirical / Scientific Evidence,"Explicit reliance on empirical data, research findings, or scientific knowledge to support the ethical judgment."
+SJ02,SJ,Professional / Clinical Expertise,"Explicit appeal to professional training, clinical experience, or disciplinary expertise as justification."
+SJ03,SJ,Philosophical / Theoretical Concepts,"Explicit use of philosophical theories, ethical frameworks, or theoretical concepts to justify the judgment."
+SJ04,SJ,Legal / Regulatory Norms,"Explicit appeal to laws, regulations, or formal institutional norms."
+SJ05,SJ,Personal Experience,Explicit reference to the participant's own lived experience as grounds for the judgment.
+SJ06,SJ,Cultural / Traditional Norms,"Explicit appeal to cultural practices, customs, or tradition."
+SJ07,SJ,Religious / Spiritual Beliefs,"Explicit appeal to religious doctrine, spiritual belief, or faith-based reasoning."
+SJ08,SJ,Analogical Reasoning,"Explicit use of an analogy or comparison to a different case, situation, or entity to justify the judgment."
+SJ09,SJ,Other Explicit Source,Any other explicitly identifiable source of justification not captured by SJ01-SJ08.

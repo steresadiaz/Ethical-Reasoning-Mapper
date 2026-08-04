@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this software, the variable dictionary, or the example dataset, please cite it as below. To cite the manual itself, see the 'references' entry and preferences/preferred-citation below."
+title: "Ethical Reasoning Mapper (ERM): companion materials"
+abstract: >-
+  R analysis pipeline, machine-readable variable dictionary, and example
+  dataset accompanying the Ethical Reasoning Mapper (ERM) coding manual — a
+  standardized coding framework for the empirical analysis of ethical
+  reasoning expressed in open-ended responses to ethical dilemmas.
+type: software
+authors:
+  - family-names: "Díaz Torres"
+    given-names: "Sofía Teresa"
+    affiliation: "Universidad Nacional Autónoma de México (UNAM)"
+  - family-names: "Torres-Rivera"
+    given-names: "Alma Delia"
+    affiliation: "Instituto Politécnico Nacional (IPN)"
+version: "1.1"
+date-released: "2026-08-04"
+license: "CC-BY-4.0"
+repository-code: "https://github.com/steresadiaz/Ethical-Reasoning-Mapper"
+url: "https://github.com/steresadiaz/Ethical-Reasoning-Mapper"
+keywords:
+  - bioethics
+  - moral reasoning
+  - ethical dilemmas
+  - qualitative coding
+  - content analysis
+  - inter-rater reliability
+  - R
+preferred-citation:
+  type: report
+  title: "Ethical Reasoning Mapper (ERM): Coding Manual for Open-Ended Responses to Ethical Dilemmas"
+  authors:
+    - family-names: "Díaz Torres"
+      given-names: "Sofía Teresa"
+      affiliation: "Universidad Nacional Autónoma de México (UNAM)"
+    - family-names: "Torres-Rivera"
+      given-names: "Alma Delia"
+      affiliation: "Instituto Politécnico Nacional (IPN)"
+  version: "1.1"
+  year: 2026
+  month: 8
+  notes: >-
+    DOI to be assigned upon deposit in Zenodo. Add an `identifiers` (doi)
+    field to this entry, and to the top-level record above, once both DOIs
+    (manual and software) are issued.

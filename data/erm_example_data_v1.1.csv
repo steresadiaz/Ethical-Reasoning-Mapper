@@ -1,0 +1,17 @@
+"response_id","participant_id","timepoint","dilemma_id","response_text","ERC01","ERC02","ERC03","ERC04","ERC05","ERC06","ERC07","ERC08","MSC01","MSC02","MSC03","MSC04","MSC05","MSC06","MSC07","MSC08","MSC09","MSC10","SJ01","SJ02","SJ03","SJ04","SJ05","SJ06","SJ07","SJ08","SJ09"
+"R001","P001","Pre","D01","[synthetic example text for demonstration purposes only]",0,0,0,0,0,1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0
+"R002","P001","Pre","D02","[synthetic example text for demonstration purposes only]",0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,1,1,0,0,1,0,0,0,0
+"R003","P001","Post","D01","[synthetic example text for demonstration purposes only]",0,0,0,1,0,0,0,1,0,0,1,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,0
+"R004","P001","Post","D02","[synthetic example text for demonstration purposes only]",0,0,0,1,0,0,1,1,0,0,1,0,0,1,0,1,0,0,0,1,1,0,0,0,0,1,1
+"R005","P002","Pre","D01","[synthetic example text for demonstration purposes only]",0,0,1,0,0,1,1,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,0,0,0
+"R006","P002","Pre","D02","[synthetic example text for demonstration purposes only]",0,0,1,1,1,1,0,0,1,0,0,0,0,1,0,0,1,0,1,1,1,0,0,1,0,0,0
+"R007","P002","Post","D01","[synthetic example text for demonstration purposes only]",1,0,0,1,0,0,1,0,0,1,0,1,1,1,0,1,0,0,1,0,0,0,1,0,0,0,1
+"R008","P002","Post","D02","[synthetic example text for demonstration purposes only]",1,0,0,1,1,0,1,1,0,0,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,1
+"R009","P003","Pre","D01","[synthetic example text for demonstration purposes only]",1,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0
+"R010","P003","Pre","D02","[synthetic example text for demonstration purposes only]",1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,0,0,0,0
+"R011","P003","Post","D01","[synthetic example text for demonstration purposes only]",0,0,0,1,0,1,0,0,1,0,0,1,1,1,0,0,0,1,0,0,1,0,1,0,1,1,0
+"R012","P003","Post","D02","[synthetic example text for demonstration purposes only]",0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,0,1,0,0,0,1
+"R013","P004","Pre","D01","[synthetic example text for demonstration purposes only]",1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1
+"R014","P004","Pre","D02","[synthetic example text for demonstration purposes only]",1,0,1,1,0,1,1,1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,1,0,1,0,0
+"R015","P004","Post","D01","[synthetic example text for demonstration purposes only]",1,0,0,0,0,1,1,1,0,0,1,0,1,1,1,1,0,0,0,1,1,0,1,1,1,0,0
+"R016","P004","Post","D02","[synthetic example text for demonstration purposes only]",0,1,0,1,0,0,0,0,0,0,0,0,1,0,0,1,1,1,0,0,1,0,0,1,1,0,1
