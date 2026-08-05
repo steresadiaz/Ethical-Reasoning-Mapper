@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.3'
+          use-public-rspm: true
+
+      - name: Install R package dependencies
+        run: install.packages(c("tidyverse", "here", "irr", "janitor", "binom"))
+        shell: Rscript {0}
+
+      - name: Run the ERM analysis pipeline on the bundled example dataset
+        run: Rscript scripts/erm_analysis.R
+
+      - name: Verify expected outputs were generated
+        run: |
+          test -f outputs/tables/frequencies_overall.csv
+          test -f outputs/tables/erm_data_with_indices.csv
+          test -f outputs/tables/participant_profiles.csv
+          test -f outputs/figures/dimension_indices_by_timepoint.png
+          test -f outputs/figures/variable_frequencies.png
+          echo "All expected outputs present."

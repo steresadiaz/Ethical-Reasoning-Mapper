@@ -40,7 +40,12 @@ preferred-citation:
   version: "1.1"
   year: 2026
   month: 8
+  identifiers:
+    - type: doi
+      value: "10.5281/zenodo.21808174"
+      description: "Archived manual, version 1.1 (Zenodo)"
   notes: >-
-    DOI to be assigned upon deposit in Zenodo. Add an `identifiers` (doi)
-    field to this entry, and to the top-level record above, once both DOIs
-    (manual and software) are issued.
+    This DOI is for the manual (Technical note). The software/companion
+    materials in this repository have a separate DOI, assigned once this
+    repository's v1.1 release is archived on Zenodo; add it as an
+    `identifiers` (doi) entry to the top-level record above once issued.

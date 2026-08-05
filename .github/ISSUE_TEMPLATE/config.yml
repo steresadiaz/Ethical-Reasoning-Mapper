@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Manual (Zenodo record)
+    url: https://doi.org/10.5281/zenodo.21808174
+    about: The archived, citable manual itself — questions about its content or DOI go there, not here.
+  - name: Security or data-privacy report
+    url: https://github.com/steresadiaz/Ethical-Reasoning-Mapper/security/policy
+    about: For anything involving real/identifiable data or citation integrity, see SECURITY.md instead of opening a public issue.

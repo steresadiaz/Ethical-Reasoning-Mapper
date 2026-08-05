@@ -1,7 +1,8 @@
 # Ethical Reasoning Mapper (ERM) — Companion Materials
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.PLACEHOLDER.svg)](#) &nbsp;
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21808174.svg)](https://doi.org/10.5281/zenodo.21808174) &nbsp;
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) &nbsp;
+[![CI](https://github.com/steresadiaz/Ethical-Reasoning-Mapper/actions/workflows/ci.yml/badge.svg)](https://github.com/steresadiaz/Ethical-Reasoning-Mapper/actions/workflows/ci.yml)
 
 This repository contains the reproducible companion materials for the
 **Ethical Reasoning Mapper (ERM)**, a standardized coding framework for the
@@ -12,7 +13,7 @@ The manual itself — the stable, citable reference — is archived on Zenodo
 with its own DOI. **This repository is versioned in lockstep with the
 manual**: the `v1.1` release corresponds exactly to manual version 1.1.
 
-- **Manual (Zenodo, stable PDF/DOCX + DOI):** `[Zenodo record URL — add once deposited]`
+- **Manual (Zenodo, stable PDF/DOCX + DOI):** https://doi.org/10.5281/zenodo.21808174
 - **This repository:** https://github.com/steresadiaz/Ethical-Reasoning-Mapper
 - **Version 1.1 release (matches the manual):** https://github.com/steresadiaz/Ethical-Reasoning-Mapper/releases/tag/v1.1
 
@@ -41,6 +42,12 @@ manual**: the `v1.1` release corresponds exactly to manual version 1.1.
 - `CITATION.cff` — machine-readable citation metadata (GitHub's "Cite this
   repository" widget reads this file).
 - `CHANGELOG.md` — version history for the manual and these materials.
+- `CONTRIBUTING.md` — how to report a coding ambiguity, propose a codebook
+  change, share pilot/IRR results, or fix the R script.
+- `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1.
+- `SECURITY.md` — how to report data-privacy or citation-integrity issues.
+- `.github/` — issue templates, PR template, and a CI workflow that runs
+  `scripts/erm_analysis.R` against the example dataset on every push/PR.
 
 ## Quick start
 
@@ -78,6 +85,13 @@ This work has two citable objects, related on Zenodo as
 
 See `CITATION.cff` for the machine-readable record, and the manual's own
 title page for its suggested citation.
+
+## Contributing
+
+Bug reports, codebook feedback, and reliability results are welcome — see
+`CONTRIBUTING.md` for how, and `CODE_OF_CONDUCT.md` for community standards.
+For data-privacy or citation-integrity reports, see `SECURITY.md` instead of
+opening a public issue.
 
 ## License
 
