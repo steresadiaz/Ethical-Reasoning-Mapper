@@ -35,8 +35,17 @@ manual**: the `v1.1` release corresponds exactly to manual version 1.1.
   (Section 14 / Appendix E): import, validation, dimension indices,
   variable-level frequencies with confidence intervals, co-occurrence
   patterns (FDR-corrected significance), participant profiles, longitudinal
-  comparisons (McNemar / Wilcoxon), inter-rater reliability (Cohen's kappa /
-  Krippendorff's alpha), and figures.
+  comparisons (McNemar / Wilcoxon, when exactly two timepoints are present),
+  inter-rater reliability (Cohen's kappa / Krippendorff's alpha), and figures.
+- `scripts/erm_pre_post_comparison.R` — isolates two specific timepoints
+  (default: "Pre"/"Post") and runs McNemar (per variable) and Wilcoxon (per
+  dimension index) on that pair — useful when your corpus has more than two
+  timepoints (e.g. a third "Follow-up"/"Continuo" wave) and
+  `erm_analysis.R` skips the longitudinal step automatically.
+- `scripts/erm_cooccurrence_heatmap.R` — a 27×27 phi-coefficient heatmap of
+  all variable pairs, ordered by dimension, with FDR-significant pairs
+  marked (requires `outputs/tables/cooccurrence_significance.csv` from
+  `erm_analysis.R`).
 - `docs/Ethical_Reasoning_Mapper_v1.1.pdf` — a copy of the manual matching
   this release, for convenience; the archival copy of record is on Zenodo.
 - `CITATION.cff` — machine-readable citation metadata (GitHub's "Cite this

@@ -294,20 +294,38 @@ index_by_timepoint <- erm_data %>%
   ) %>%
   pivot_longer(-timepoint, names_to = "dimension", values_to = "mean_index")
 
+# Palette shared with the manual (teal / terracotta / ochre) so figures and
+# the manual read as one visual system.
+erm_palette <- c(ERC = "#1F6F5C", MSC = "#C1662E", SJ = "#9C7A1E")
+
+erm_theme <- theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", color = "#262626", size = rel(1.15)),
+    axis.title = element_text(color = "#404040"),
+    axis.text = element_text(color = "#595959"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "#E5E5E5"),
+    legend.title = element_text(face = "bold", color = "#404040"),
+    legend.position = "right"
+  )
+
 p_indices <- ggplot(index_by_timepoint, aes(x = timepoint, y = mean_index, color = dimension, group = dimension)) +
-  geom_line() +
-  geom_point() +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2.6) +
+  scale_color_manual(values = erm_palette) +
   labs(title = "ERM Dimension Indices by Timepoint", x = "Timepoint", y = "Mean index", color = "Dimension") +
-  theme_minimal()
+  erm_theme
 
 ggsave(here(figures_dir, "dimension_indices_by_timepoint.png"), p_indices, width = 7, height = 5, dpi = 300)
 
 p_freq <- freq_overall %>%
   ggplot(aes(x = reorder(variable, proportion_present), y = proportion_present, fill = dimension)) +
-  geom_col() +
+  geom_col(width = 0.75) +
+  scale_fill_manual(values = erm_palette) +
   coord_flip() +
-  labs(title = "ERM Variable Frequencies", x = NULL, y = "Proportion of responses coded present") +
-  theme_minimal()
+  labs(title = "ERM Variable Frequencies", x = NULL, y = "Proportion of responses coded present",
+       fill = "Dimension") +
+  erm_theme
 
 ggsave(here(figures_dir, "variable_frequencies.png"), p_freq, width = 8, height = 9, dpi = 300)
 
