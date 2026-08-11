@@ -34,7 +34,10 @@ manual**: the `v1.1` release corresponds exactly to manual version 1.1.
 - `scripts/erm_analysis.R` — the complete, production-ready R analysis
   pipeline (Section 14 / Appendix E), a single script covering all of:
   - import, validation, dimension indices, variable-level frequencies with
-    Wilson confidence intervals;
+    Wilson confidence intervals, by timepoint, and by dilemma;
+  - dimension indices by dilemma, with an optional `data/dilemmas.csv`
+    (columns: `dilemma_id`, `phase`, `question`) joined in for readable
+    labels — omit the file and it falls back to bare IDs;
   - co-occurrence patterns (FDR-corrected significance) **plus** a 27×27
     phi-coefficient heatmap, ordered by dimension, with significant pairs
     marked;

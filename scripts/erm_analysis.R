@@ -159,6 +159,49 @@ freq_by_dilemma <- erm_data %>%
 
 write_csv(freq_by_dilemma, here(tables_dir, "frequencies_by_dilemma.csv"))
 
+# Dimension indices by dilemma. If data/dilemmas.csv exists (columns:
+# dilemma_id, phase, question) it's joined in for readable labels; this
+# file is study-specific and optional, so its absence only drops the labels,
+# not the analysis.
+dilemma_dict_path <- here("data", "dilemmas.csv")
+
+index_by_dilemma <- erm_data %>%
+  group_by(dilemma_id) %>%
+  summarise(
+    n = n(),
+    ERC = mean(ERC_index, na.rm = TRUE),
+    MSC = mean(MSC_index, na.rm = TRUE),
+    SJ  = mean(SJ_index,  na.rm = TRUE),
+    .groups = "drop"
+  )
+
+if (file.exists(dilemma_dict_path)) {
+  dilemma_dict <- read_csv(dilemma_dict_path, show_col_types = FALSE)
+  index_by_dilemma <- index_by_dilemma %>%
+    left_join(dilemma_dict, by = "dilemma_id") %>%
+    relocate(phase, question, .after = dilemma_id)
+} else {
+  message(
+    "No dilemma dictionary found at ", dilemma_dict_path,
+    " -- dilemma-by-dilemma outputs will use bare IDs only. Add a ",
+    "data/dilemmas.csv (columns: dilemma_id, phase, question) for readable labels."
+  )
+}
+
+write_csv(index_by_dilemma, here(tables_dir, "indices_by_dilemma.csv"))
+
+p_dilemma <- index_by_dilemma %>%
+  pivot_longer(c(ERC, MSC, SJ), names_to = "dimension", values_to = "mean_index") %>%
+  mutate(dilemma_id = factor(dilemma_id, levels = rev(sort(unique(dilemma_id))))) %>%
+  ggplot(aes(x = dilemma_id, y = mean_index, fill = dimension)) +
+  geom_col(position = "dodge", width = 0.7) +
+  scale_fill_manual(values = erm_palette) +
+  coord_flip() +
+  labs(title = "ERM Dimension Indices by Dilemma", x = NULL, y = "Mean index", fill = "Dimension") +
+  erm_theme
+
+ggsave(here(figures_dir, "dimension_indices_by_dilemma.png"), p_dilemma, width = 8, height = 8, dpi = 300)
+
 # 5. Co-occurrence patterns --------------------------------------------------
 
 cooccurrence <- erm_data %>%
