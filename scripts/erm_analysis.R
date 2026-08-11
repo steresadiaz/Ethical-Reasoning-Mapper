@@ -77,9 +77,14 @@ missing_vars <- setdiff(erm_vars, names(erm_data))
 if (length(missing_meta) > 0) stop("Missing required metadata columns: ", paste(missing_meta, collapse = ", "))
 if (length(missing_vars) > 0) stop("Missing ERM variable columns: ", paste(missing_vars, collapse = ", "))
 
-# Order timepoint chronologically (Pre < Post < Follow-up/Continuo), not
-# alphabetically -- plain character/factor sorting would otherwise put
-# "Continuo" before "Post" before "Pre" and silently invert every trend line.
+# Order timepoint chronologically, not alphabetically -- plain character/
+# factor sorting would otherwise put e.g. "Continuo" before "Post" before
+# "Pre" and silently invert every trend line. The default below assumes the
+# common convention Pre < Post < Follow-up/Continuo (a wave collected AFTER
+# the post-assessment). If your "Continuo"/"Follow-up" wave instead falls
+# BETWEEN pre and post (e.g. ongoing coursework collected during the term),
+# edit canonical_timepoints accordingly -- and check the message this prints
+# every run against your actual study design; don't assume it's right.
 # Unrecognized labels are appended afterwards in first-appearance order.
 canonical_timepoints <- c("pretest", "pre", "baseline", "t1",
                           "posttest", "post", "t2",
@@ -89,6 +94,11 @@ rank_timepoint <- match(tolower(timepoint_levels), canonical_timepoints)
 rank_timepoint[is.na(rank_timepoint)] <- length(canonical_timepoints) + seq_len(sum(is.na(rank_timepoint)))
 timepoint_levels <- timepoint_levels[order(rank_timepoint)]
 erm_data <- erm_data %>% mutate(timepoint = factor(timepoint, levels = timepoint_levels))
+message(
+  "Timepoint order (chronological, as inferred): ",
+  paste(timepoint_levels, collapse = " -> "),
+  ". If this is wrong for your study design, edit canonical_timepoints in this script."
+)
 
 # 2. Validate binary coding ------------------------------------------------
 
