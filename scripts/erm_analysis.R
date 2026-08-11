@@ -42,6 +42,24 @@ erm_vars <- c(erc_vars, msc_vars, sj_vars)
 
 meta_vars <- c("response_id", "participant_id", "timepoint", "dilemma_id", "response_text")
 
+# Shared visual style for every figure in this script -- a blue/purple
+# family, used both categorically (ERC/MSC/SJ) and as a diverging scale
+# (heatmap). Keeping it in one place means every plot restyles together.
+erm_palette <- c(ERC = "#1F5C8B", MSC = "#7B4FA6", SJ = "#4FA3C4")
+erm_diverging <- list(low = "#7B4FA6", mid = "#F7F5FB", high = "#1F5C8B")
+
+erm_theme <- theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", color = "#262626", size = rel(1.15)),
+    plot.subtitle = element_text(color = "#595959", size = rel(0.85)),
+    axis.title = element_text(color = "#404040"),
+    axis.text = element_text(color = "#595959"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "#E5E5E5"),
+    legend.title = element_text(face = "bold", color = "#404040"),
+    legend.position = "right"
+  )
+
 # 1. Import coded dataset -------------------------------------------------
 
 if (!file.exists(coded_path)) {
@@ -54,7 +72,6 @@ if (!file.exists(coded_path)) {
 }
 
 erm_data <- read_csv(coded_path, show_col_types = FALSE)
-
 missing_meta <- setdiff(meta_vars, names(erm_data))
 missing_vars <- setdiff(erm_vars, names(erm_data))
 if (length(missing_meta) > 0) stop("Missing required metadata columns: ", paste(missing_meta, collapse = ", "))
@@ -171,6 +188,63 @@ cooccurrence_tests <- map_dfr(var_pairs, function(pair) {
 
 write_csv(cooccurrence_tests, here(tables_dir, "cooccurrence_significance.csv"))
 
+# Co-occurrence heatmap: phi coefficient (= Pearson correlation for two
+# binary variables) for every pair, ordered by dimension, with
+# FDR-significant pairs marked. Variables with zero variance (never coded
+# present) have an undefined correlation -- shown as blank cells, not a
+# spurious value.
+phi_mat <- suppressWarnings(cor(erm_data[erm_vars]))
+diag(phi_mat) <- NA
+
+phi_long <- as.data.frame(phi_mat) %>%
+  rownames_to_column("variable_1") %>%
+  pivot_longer(-variable_1, names_to = "variable_2", values_to = "phi")
+
+sig_filtered <- cooccurrence_tests %>% filter(p_adjusted < 0.05) %>% select(variable_1, variable_2)
+sig_pairs <- bind_rows(
+  sig_filtered,
+  sig_filtered %>% rename(variable_1 = variable_2, variable_2 = variable_1)
+) %>%
+  mutate(significant = TRUE)
+
+phi_long <- phi_long %>%
+  left_join(sig_pairs, by = c("variable_1", "variable_2")) %>%
+  mutate(
+    significant = replace_na(significant, FALSE),
+    variable_1 = factor(variable_1, levels = erm_vars),
+    variable_2 = factor(variable_2, levels = rev(erm_vars))
+  )
+
+block_breaks <- c(length(erc_vars), length(erc_vars) + length(msc_vars)) + 0.5
+
+p_heatmap <- ggplot(phi_long, aes(x = variable_1, y = variable_2, fill = phi)) +
+  geom_tile(color = "white", linewidth = 0.4) +
+  geom_text(
+    data = filter(phi_long, significant, variable_1 != as.character(variable_2)),
+    label = "*", color = "white", size = 4, fontface = "bold", vjust = 0.75
+  ) +
+  scale_fill_gradient2(
+    low = erm_diverging$low, mid = erm_diverging$mid, high = erm_diverging$high, midpoint = 0,
+    na.value = "#EFEFEF", limits = c(-0.55, 0.55),
+    name = "Coeficiente\nphi"
+  ) +
+  geom_vline(xintercept = block_breaks, color = "#8C8C8C", linewidth = 0.5) +
+  geom_hline(yintercept = length(erm_vars) - block_breaks + 1, color = "#8C8C8C", linewidth = 0.5) +
+  coord_fixed() +
+  labs(
+    title = "Co-ocurrencia entre variables ERM (coeficiente phi)",
+    subtitle = "Ordenado por dimensión (ERC | MSC | SJ). * = significativo tras corrección FDR (p < .05)",
+    x = NULL, y = NULL
+  ) +
+  erm_theme +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = rel(0.75)),
+    axis.text.y = element_text(size = rel(0.75)),
+    panel.grid = element_blank()
+  )
+
+ggsave(here(figures_dir, "cooccurrence_heatmap.png"), p_heatmap, width = 10, height = 9, dpi = 300)
+
 # 6. Participant profiles ----------------------------------------------------
 
 participant_profiles <- erm_data %>%
@@ -188,17 +262,15 @@ write_csv(participant_profiles, here(tables_dir, "participant_profiles.csv"))
 
 # 7. Longitudinal comparisons -------------------------------------------------
 # McNemar's test (binary variables) and Wilcoxon signed-rank (dimension
-# indices) for the two-timepoint case (Section 13). Pairs are matched on
-# participant_id x dilemma_id; rows without a match at both timepoints are
-# dropped. For >2 timepoints, use a mixed-effects model instead (Section 13).
+# indices), matched on participant_id x dilemma_id; rows without a match at
+# both timepoints are dropped. For >2 timepoints, a mixed-effects model is
+# recommended instead (Section 13) -- but if the corpus has more than two
+# timepoints AND includes "Pre" and "Post" specifically, this step still
+# runs that one comparison in addition, since it's the most common request.
 
-timepoints <- sort(unique(erm_data$timepoint))
-
-if (length(timepoints) == 2) {
-  t1 <- timepoints[1]
-  t2 <- timepoints[2]
-
-  paired <- erm_data %>%
+run_paired_tests <- function(data, t1, t2, label) {
+  paired <- data %>%
+    filter(timepoint %in% c(t1, t2)) %>%
     select(participant_id, dilemma_id, timepoint, all_of(erm_vars),
            ERC_index, MSC_index, SJ_index) %>%
     pivot_wider(
@@ -214,24 +286,68 @@ if (length(timepoints) == 2) {
     tab <- table(factor(col1, levels = c(0, 1)), factor(col2, levels = c(0, 1)))
     result <- tryCatch(mcnemar.test(tab, correct = TRUE), error = function(e) NULL)
     if (is.null(result)) return(NULL)
-    tibble(variable = v, n_pairs = nrow(paired), statistic = unname(result$statistic),
-           p_value = result$p.value)
-  })
-  write_csv(mcnemar_results, here(tables_dir, "mcnemar_longitudinal.csv"))
+    tibble(
+      variable = v, n_pairs = nrow(paired),
+      n_present_t1 = sum(col1), n_present_t2 = sum(col2),
+      statistic = unname(result$statistic), p_value = result$p.value
+    )
+  }) %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"))
 
   wilcoxon_results <- map_dfr(c("ERC_index", "MSC_index", "SJ_index"), function(idx) {
     x <- paired[[paste0(idx, "_", t1)]]
     y <- paired[[paste0(idx, "_", t2)]]
     result <- tryCatch(wilcox.test(x, y, paired = TRUE), error = function(e) NULL)
     if (is.null(result)) return(NULL)
-    tibble(dimension_index = idx, n_pairs = nrow(paired), statistic = unname(result$statistic),
-           p_value = result$p.value)
+    tibble(
+      dimension_index = idx, n_pairs = nrow(paired),
+      mean_t1 = mean(x), mean_t2 = mean(y), mean_diff = mean(y - x),
+      statistic = unname(result$statistic), p_value = result$p.value
+    )
   })
-  write_csv(wilcoxon_results, here(tables_dir, "wilcoxon_longitudinal.csv"))
+
+  write_csv(mcnemar_results, here(tables_dir, paste0("mcnemar_", label, ".csv")))
+  write_csv(wilcoxon_results, here(tables_dir, paste0("wilcoxon_", label, ".csv")))
+
+  index_by_tp <- data %>%
+    filter(timepoint %in% c(t1, t2)) %>%
+    group_by(timepoint) %>%
+    summarise(ERC = mean(ERC_index), MSC = mean(MSC_index), SJ = mean(SJ_index), .groups = "drop") %>%
+    pivot_longer(-timepoint, names_to = "dimension", values_to = "mean_index")
+
+  p <- ggplot(index_by_tp, aes(x = timepoint, y = mean_index, color = dimension, group = dimension)) +
+    geom_line(linewidth = 1.1) +
+    geom_point(size = 2.6) +
+    scale_color_manual(values = erm_palette) +
+    labs(title = paste0("ERM Dimension Indices: ", t1, " vs. ", t2),
+         x = "Timepoint", y = "Mean index", color = "Dimension") +
+    erm_theme
+  ggsave(here(figures_dir, paste0("dimension_indices_", label, ".png")), p, width = 6, height = 5, dpi = 300)
+
+  list(paired = paired, mcnemar = mcnemar_results, wilcoxon = wilcoxon_results)
+}
+
+timepoints_present <- levels(droplevels(erm_data$timepoint))
+
+if (length(timepoints_present) == 2) {
+  invisible(run_paired_tests(erm_data, timepoints_present[1], timepoints_present[2], "longitudinal"))
 } else {
   message(
-    "Longitudinal tests (McNemar / Wilcoxon) skipped: exactly two timepoints are required, ",
-    "found ", length(timepoints), "."
+    "Longitudinal tests on the full timepoint set skipped: exactly two timepoints are ",
+    "required, found ", length(timepoints_present), " (", paste(timepoints_present, collapse = ", "), ")."
+  )
+}
+
+if (all(c("Pre", "Post") %in% timepoints_present) && length(timepoints_present) != 2) {
+  message(
+    "Corpus has ", length(timepoints_present), " timepoints; running an additional ",
+    "Pre vs. Post-only comparison..."
+  )
+  pp <- run_paired_tests(erm_data, "Pre", "Post", "pre_vs_post")
+  n_sig <- sum(pp$mcnemar$p_adjusted < 0.05, na.rm = TRUE)
+  message(
+    "McNemar (Pre vs Post): ", n_sig, " of ", nrow(pp$mcnemar),
+    " variables significant after FDR correction (p_adjusted < .05)."
   )
 }
 
@@ -293,21 +409,6 @@ index_by_timepoint <- erm_data %>%
     .groups = "drop"
   ) %>%
   pivot_longer(-timepoint, names_to = "dimension", values_to = "mean_index")
-
-# Palette shared with the manual (teal / terracotta / ochre) so figures and
-# the manual read as one visual system.
-erm_palette <- c(ERC = "#1F6F5C", MSC = "#C1662E", SJ = "#9C7A1E")
-
-erm_theme <- theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", color = "#262626", size = rel(1.15)),
-    axis.title = element_text(color = "#404040"),
-    axis.text = element_text(color = "#595959"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "#E5E5E5"),
-    legend.title = element_text(face = "bold", color = "#404040"),
-    legend.position = "right"
-  )
 
 p_indices <- ggplot(index_by_timepoint, aes(x = timepoint, y = mean_index, color = dimension, group = dimension)) +
   geom_line(linewidth = 1.1) +

@@ -31,21 +31,23 @@ manual**: the `v1.1` release corresponds exactly to manual version 1.1.
   responses, all 27 variables) for testing the pipeline and learning the
   expected data structure (Section 5). **Synthetic, not real participant
   data.**
-- `scripts/erm_analysis.R` — the production-ready R analysis pipeline
-  (Section 14 / Appendix E): import, validation, dimension indices,
-  variable-level frequencies with confidence intervals, co-occurrence
-  patterns (FDR-corrected significance), participant profiles, longitudinal
-  comparisons (McNemar / Wilcoxon, when exactly two timepoints are present),
-  inter-rater reliability (Cohen's kappa / Krippendorff's alpha), and figures.
-- `scripts/erm_pre_post_comparison.R` — isolates two specific timepoints
-  (default: "Pre"/"Post") and runs McNemar (per variable) and Wilcoxon (per
-  dimension index) on that pair — useful when your corpus has more than two
-  timepoints (e.g. a third "Follow-up"/"Continuo" wave) and
-  `erm_analysis.R` skips the longitudinal step automatically.
-- `scripts/erm_cooccurrence_heatmap.R` — a 27×27 phi-coefficient heatmap of
-  all variable pairs, ordered by dimension, with FDR-significant pairs
-  marked (requires `outputs/tables/cooccurrence_significance.csv` from
-  `erm_analysis.R`).
+- `scripts/erm_analysis.R` — the complete, production-ready R analysis
+  pipeline (Section 14 / Appendix E), a single script covering all of:
+  - import, validation, dimension indices, variable-level frequencies with
+    Wilson confidence intervals;
+  - co-occurrence patterns (FDR-corrected significance) **plus** a 27×27
+    phi-coefficient heatmap, ordered by dimension, with significant pairs
+    marked;
+  - participant profiles;
+  - longitudinal comparisons (McNemar per variable, Wilcoxon per dimension
+    index) — automatic when exactly two timepoints are present, *and* an
+    additional Pre-vs-Post-only comparison + figure whenever the corpus has
+    more than two timepoints but still includes "Pre" and "Post" (e.g. a
+    third "Follow-up"/"Continuo" wave);
+  - inter-rater reliability (Cohen's kappa / Krippendorff's alpha);
+  - all figures, styled with one shared blue/purple palette (`erm_palette`,
+    `erm_diverging`, `erm_theme` near the top of the script) so every plot
+    restyles together.
 - `docs/Ethical_Reasoning_Mapper_v1.1.pdf` — a copy of the manual matching
   this release, for convenience; the archival copy of record is on Zenodo.
 - `CITATION.cff` — machine-readable citation metadata (GitHub's "Cite this
