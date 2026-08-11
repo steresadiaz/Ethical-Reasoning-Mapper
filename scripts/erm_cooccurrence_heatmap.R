@@ -69,7 +69,7 @@ p_heatmap <- ggplot(phi_long, aes(x = variable_1, y = variable_2, fill = phi)) +
     label = "*", color = "white", size = 4, fontface = "bold", vjust = 0.75
   ) +
   scale_fill_gradient2(
-    low = "#C1662E", mid = "#FBF7F2", high = "#1F6F5C", midpoint = 0,
+    low = "#6A4C93", mid = "#F7F5FB", high = "#1F5C8B", midpoint = 0,
     na.value = "#EFEFEF", limits = c(-0.55, 0.55),
     name = "Coeficiente\nphi"
   ) +
