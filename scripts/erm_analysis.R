@@ -130,7 +130,17 @@ erm_data <- erm_data %>%
   mutate(
     ERC_index = rowSums(across(all_of(erc_vars)), na.rm = TRUE),
     MSC_index = rowSums(across(all_of(msc_vars)), na.rm = TRUE),
-    SJ_index  = rowSums(across(all_of(sj_vars)),  na.rm = TRUE)
+    SJ_index  = rowSums(across(all_of(sj_vars)),  na.rm = TRUE),
+    # Supplementary composite (0-27) = ERC_index + MSC_index + SJ_index.
+    # ERC/MSC/SJ capture conceptually different things (reasoning components,
+    # morally salient considerations, sources of justification) and should
+    # normally be reported and analyzed separately, not collapsed into one
+    # number. This sum is provided for readers who want a single overall
+    # count, but per Section 10's Validation Status (no expert-panel, pilot,
+    # or inter-rater validation yet), report it as a descriptive "density of
+    # ERM components identified" -- NOT as a validated "argumentative
+    # complexity" construct.
+    erm_density_index = ERC_index + MSC_index + SJ_index
   )
 
 write_csv(erm_data, here(tables_dir, "erm_data_with_indices.csv"))
@@ -321,15 +331,37 @@ write_csv(participant_profiles, here(tables_dir, "participant_profiles.csv"))
 # timepoints AND includes "Pre" and "Post" specifically, this step still
 # runs that one comparison in addition, since it's the most common request.
 
+dimension_indices <- c("ERC_index", "MSC_index", "SJ_index", "erm_density_index")
+
+# Matched-pairs rank-biserial correlation, the standard effect size for a
+# Wilcoxon signed-rank test: r = (V+ - V-) / (V+ + V-), computed from the
+# signed ranks of the non-zero differences (ties/zeroes dropped, matching
+# what wilcox.test() itself excludes).
+rank_biserial <- function(x, y) {
+  d <- y - x
+  d <- d[d != 0]
+  if (length(d) == 0) return(NA_real_)
+  r <- rank(abs(d))
+  v_pos <- sum(r[d > 0])
+  v_total <- sum(r)
+  (2 * v_pos - v_total) / v_total
+}
+
 run_paired_tests <- function(data, t1, t2, label) {
+  # --- Response-level pairing (participant_id x dilemma_id) -----------------
+  # EXPLORATORY ONLY: a participant who answered N dilemmas contributes N
+  # pairs here, so these are not independent observations -- do not use this
+  # as the confirmatory test (see the participant-level block below, which
+  # is). Kept because it's useful for per-variable McNemar tests, where the
+  # unit of interest genuinely is the response, not the participant.
   paired <- data %>%
     filter(timepoint %in% c(t1, t2)) %>%
     select(participant_id, dilemma_id, timepoint, all_of(erm_vars),
-           ERC_index, MSC_index, SJ_index) %>%
+           all_of(dimension_indices)) %>%
     pivot_wider(
       id_cols = c(participant_id, dilemma_id),
       names_from = timepoint,
-      values_from = c(all_of(erm_vars), ERC_index, MSC_index, SJ_index)
+      values_from = c(all_of(erm_vars), all_of(dimension_indices))
     ) %>%
     drop_na()
 
@@ -347,7 +379,7 @@ run_paired_tests <- function(data, t1, t2, label) {
   }) %>%
     mutate(p_adjusted = p.adjust(p_value, method = "BH"))
 
-  wilcoxon_results <- map_dfr(c("ERC_index", "MSC_index", "SJ_index"), function(idx) {
+  wilcoxon_by_response <- map_dfr(dimension_indices, function(idx) {
     x <- paired[[paste0(idx, "_", t1)]]
     y <- paired[[paste0(idx, "_", t2)]]
     result <- tryCatch(wilcox.test(x, y, paired = TRUE), error = function(e) NULL)
@@ -355,12 +387,40 @@ run_paired_tests <- function(data, t1, t2, label) {
     tibble(
       dimension_index = idx, n_pairs = nrow(paired),
       mean_t1 = mean(x), mean_t2 = mean(y), mean_diff = mean(y - x),
-      statistic = unname(result$statistic), p_value = result$p.value
+      statistic = unname(result$statistic), p_value = result$p.value,
+      effect_size_r = rank_biserial(x, y)
+    )
+  })
+
+  # --- Participant-level pairing (CONFIRMATORY) ------------------------------
+  # Each participant's responses are averaged within timepoint first, so
+  # every participant contributes exactly one Pre value and one Post value --
+  # this is what "n = <number of participants>" in the manuscript should
+  # refer to, and is the analysis that should be reported as confirmatory.
+  participant_level <- data %>%
+    filter(timepoint %in% c(t1, t2)) %>%
+    group_by(participant_id, timepoint) %>%
+    summarise(across(all_of(dimension_indices), ~ mean(.x, na.rm = TRUE)), .groups = "drop") %>%
+    pivot_wider(id_cols = participant_id, names_from = timepoint, values_from = all_of(dimension_indices)) %>%
+    drop_na()
+
+  wilcoxon_by_participant <- map_dfr(dimension_indices, function(idx) {
+    x <- participant_level[[paste0(idx, "_", t1)]]
+    y <- participant_level[[paste0(idx, "_", t2)]]
+    result <- tryCatch(wilcox.test(x, y, paired = TRUE), error = function(e) NULL)
+    if (is.null(result)) return(NULL)
+    tibble(
+      dimension_index = idx, n_participants = nrow(participant_level),
+      mean_t1 = mean(x), mean_t2 = mean(y), mean_diff = mean(y - x),
+      n_increased = sum(y > x), n_decreased = sum(y < x), n_unchanged = sum(y == x),
+      statistic = unname(result$statistic), p_value = result$p.value,
+      effect_size_r = rank_biserial(x, y)
     )
   })
 
   write_csv(mcnemar_results, here(tables_dir, paste0("mcnemar_", label, ".csv")))
-  write_csv(wilcoxon_results, here(tables_dir, paste0("wilcoxon_", label, ".csv")))
+  write_csv(wilcoxon_by_response, here(tables_dir, paste0("wilcoxon_", label, "_by_response.csv")))
+  write_csv(wilcoxon_by_participant, here(tables_dir, paste0("wilcoxon_", label, "_by_participant.csv")))
 
   index_by_tp <- data %>%
     filter(timepoint %in% c(t1, t2)) %>%
@@ -377,7 +437,9 @@ run_paired_tests <- function(data, t1, t2, label) {
     erm_theme
   ggsave(here(figures_dir, paste0("dimension_indices_", label, ".png")), p, width = 6, height = 5, dpi = 300)
 
-  list(paired = paired, mcnemar = mcnemar_results, wilcoxon = wilcoxon_results)
+  list(paired = paired, mcnemar = mcnemar_results,
+       wilcoxon_by_response = wilcoxon_by_response,
+       wilcoxon_by_participant = wilcoxon_by_participant)
 }
 
 timepoints_present <- levels(droplevels(erm_data$timepoint))
@@ -399,9 +461,14 @@ if (all(c("Pre", "Post") %in% timepoints_present) && length(timepoints_present) 
   pp <- run_paired_tests(erm_data, "Pre", "Post", "pre_vs_post")
   n_sig <- sum(pp$mcnemar$p_adjusted < 0.05, na.rm = TRUE)
   message(
-    "McNemar (Pre vs Post): ", n_sig, " of ", nrow(pp$mcnemar),
+    "McNemar (Pre vs Post, response-level, exploratory): ", n_sig, " of ", nrow(pp$mcnemar),
     " variables significant after FDR correction (p_adjusted < .05)."
   )
+  message(
+    "Wilcoxon (Pre vs Post, participant-level, CONFIRMATORY, n = ",
+    pp$wilcoxon_by_participant$n_participants[1], " participants):"
+  )
+  print(pp$wilcoxon_by_participant %>% select(dimension_index, mean_t1, mean_t2, p_value, effect_size_r))
 }
 
 # 8. Inter-rater reliability ---------------------------------------------------
@@ -467,10 +534,14 @@ p_indices <- ggplot(index_by_timepoint, aes(x = timepoint, y = mean_index, color
   geom_line(linewidth = 1.1) +
   geom_point(size = 2.6) +
   scale_color_manual(values = erm_palette) +
-  labs(title = "ERM Dimension Indices by Timepoint", x = "Timepoint", y = "Mean index", color = "Dimension") +
+  labs(
+    title = "ERM Dimension Indices by Timepoint",
+    subtitle = "Descriptive overview only. Pre and Post share the same dilemma set (D01–D10) and are the\nvalid paired comparison (see *_pre_vs_post outputs); Continuo uses a different, more complex\ndilemma set (D11–D20) and is not a matched timepoint -- see indices_by_dilemma for that breakdown.",
+    x = "Timepoint", y = "Mean index", color = "Dimension"
+  ) +
   erm_theme
 
-ggsave(here(figures_dir, "dimension_indices_by_timepoint.png"), p_indices, width = 7, height = 5, dpi = 300)
+ggsave(here(figures_dir, "dimension_indices_by_timepoint.png"), p_indices, width = 8.5, height = 5.5, dpi = 300)
 
 p_freq <- freq_overall %>%
   ggplot(aes(x = reorder(variable, proportion_present), y = proportion_present, fill = dimension)) +

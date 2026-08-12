@@ -46,7 +46,21 @@ manual**: the `v1.1` release corresponds exactly to manual version 1.1.
     index) — automatic when exactly two timepoints are present, *and* an
     additional Pre-vs-Post-only comparison + figure whenever the corpus has
     more than two timepoints but still includes "Pre" and "Post" (e.g. a
-    third "Follow-up"/"Continuo" wave);
+    third "Follow-up"/"Continuo" wave). Every Wilcoxon comparison runs
+    **twice**: `*_by_response` pairs participant×dilemma rows (exploratory —
+    one participant can contribute many pairs, so these aren't independent
+    observations) and `*_by_participant` averages each participant's
+    responses within timepoint first, so n = number of participants and
+    every observation is independent. **Treat `*_by_participant` as the
+    confirmatory test** and report *n* accordingly; `*_by_response` is
+    supporting/exploratory only. Each also reports a matched-pairs
+    rank-biserial effect size (`effect_size_r`).
+  - a supplementary `erm_density_index` (0–27 = ERC + MSC + SJ summed) is
+    computed alongside the three dimension indices, for anyone who wants a
+    single overall count — report it as a descriptive "density of ERM
+    components identified," not as a validated "argumentative complexity"
+    construct (the manual's own Validation Status, Section 10, is explicit
+    that no expert-panel, pilot, or inter-rater validation has been done yet);
   - inter-rater reliability (Cohen's kappa / Krippendorff's alpha);
   - all figures, styled with one shared blue/purple palette (`erm_palette`,
     `erm_diverging`, `erm_theme` near the top of the script) so every plot
