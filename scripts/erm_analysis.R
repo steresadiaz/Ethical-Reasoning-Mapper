@@ -404,13 +404,21 @@ run_paired_tests <- function(data, t1, t2, label) {
     pivot_wider(id_cols = participant_id, names_from = timepoint, values_from = all_of(dimension_indices)) %>%
     drop_na()
 
+  # Wilcoxon was chosen because n is small and non-parametric -- report
+  # median/IQR as the primary summary (means are also kept, since some
+  # readers/reviewers expect them, but median/IQR is what should be quoted
+  # in text alongside the test).
   wilcoxon_by_participant <- map_dfr(dimension_indices, function(idx) {
     x <- participant_level[[paste0(idx, "_", t1)]]
     y <- participant_level[[paste0(idx, "_", t2)]]
     result <- tryCatch(wilcox.test(x, y, paired = TRUE), error = function(e) NULL)
     if (is.null(result)) return(NULL)
+    q_t1 <- quantile(x, c(0.25, 0.75), type = 7)
+    q_t2 <- quantile(y, c(0.25, 0.75), type = 7)
     tibble(
       dimension_index = idx, n_participants = nrow(participant_level),
+      median_t1 = median(x), q1_t1 = unname(q_t1[1]), q3_t1 = unname(q_t1[2]),
+      median_t2 = median(y), q1_t2 = unname(q_t2[1]), q3_t2 = unname(q_t2[2]),
       mean_t1 = mean(x), mean_t2 = mean(y), mean_diff = mean(y - x),
       n_increased = sum(y > x), n_decreased = sum(y < x), n_unchanged = sum(y == x),
       statistic = unname(result$statistic), p_value = result$p.value,
@@ -436,6 +444,41 @@ run_paired_tests <- function(data, t1, t2, label) {
          x = "Timepoint", y = "Mean index", color = "Dimension") +
     erm_theme
   ggsave(here(figures_dir, paste0("dimension_indices_", label, ".png")), p, width = 6, height = 5, dpi = 300)
+
+  # Individual participant trajectories, Pre -> Post, one line per
+  # participant, faceted by dimension. This is the confirmatory figure:
+  # it makes both the shared direction of change AND the heterogeneity of
+  # its magnitude visible, which a single aggregated line cannot show.
+  trajectories <- participant_level %>%
+    select(participant_id, starts_with("ERC_index"), starts_with("MSC_index"), starts_with("SJ_index")) %>%
+    pivot_longer(-participant_id, names_to = "key", values_to = "value") %>%
+    mutate(
+      dimension = case_when(
+        str_starts(key, "ERC_index") ~ "ERC",
+        str_starts(key, "MSC_index") ~ "MSC",
+        str_starts(key, "SJ_index")  ~ "SJ"
+      ),
+      timepoint = if_else(str_ends(key, paste0("_", t1)), t1, t2),
+      timepoint = factor(timepoint, levels = c(t1, t2))
+    )
+
+  participant_palette_n <- length(unique(trajectories$participant_id))
+  p_traj <- ggplot(trajectories, aes(x = timepoint, y = value, group = participant_id, color = participant_id)) +
+    geom_line(linewidth = 0.9, alpha = 0.85) +
+    geom_point(size = 2.2) +
+    facet_wrap(~ factor(dimension, levels = c("ERC", "MSC", "SJ")), scales = "free_y") +
+    scale_color_viridis_d(option = "D", end = 0.9) +
+    labs(
+      title = paste0("Individual Participant Trajectories: ", t1, " vs. ", t2),
+      subtitle = paste0("n = ", participant_palette_n, " participants, one line each. Shared direction of change is visible per facet, alongside its heterogeneity."),
+      x = "Timepoint", y = "Index (participant mean across dilemmas)", color = "Participant"
+    ) +
+    erm_theme +
+    theme(panel.grid.major.x = element_blank())
+  ggsave(
+    here(figures_dir, paste0("dimension_indices_trajectories_", label, ".png")),
+    p_traj, width = 10, height = 4.5, dpi = 300
+  )
 
   list(paired = paired, mcnemar = mcnemar_results,
        wilcoxon_by_response = wilcoxon_by_response,

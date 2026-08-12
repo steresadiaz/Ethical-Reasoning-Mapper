@@ -53,8 +53,15 @@ manual**: the `v1.1` release corresponds exactly to manual version 1.1.
     responses within timepoint first, so n = number of participants and
     every observation is independent. **Treat `*_by_participant` as the
     confirmatory test** and report *n* accordingly; `*_by_response` is
-    supporting/exploratory only. Each also reports a matched-pairs
-    rank-biserial effect size (`effect_size_r`).
+    supporting/exploratory only. `*_by_participant` reports median and IQR
+    (Q1/Q3) alongside the mean — Wilcoxon is a non-parametric test, so
+    median/IQR is what should be quoted in text — plus a matched-pairs
+    rank-biserial effect size (`effect_size_r`) and `n_increased` /
+    `n_decreased` / `n_unchanged`. A companion figure,
+    `dimension_indices_trajectories_<label>.png`, plots one line per
+    participant (ERC/MSC/SJ, faceted) so shared direction and heterogeneity
+    of change are both visible — this, not the aggregated line chart, is
+    the figure to lead with when the confirmatory result is the point.
   - a supplementary `erm_density_index` (0–27 = ERC + MSC + SJ summed) is
     computed alongside the three dimension indices, for anyone who wants a
     single overall count — report it as a descriptive "density of ERM
